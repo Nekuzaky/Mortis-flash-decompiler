@@ -1,6 +1,31 @@
-First public release of MortisFlash, a Flash (SWF) decompiler, editor and ActionScript 2/3 compiler for Windows.
+Performance and player responsiveness update for MortisFlash, the Flash (SWF) decompiler, editor and ActionScript 2/3
+compiler for Windows.
 
 ![MortisFlash](https://raw.githubusercontent.com/Nekuzaky/Mortis-flash-decompiler/main/docs/images/screenshot-main.png)
+
+## What's new
+
+**Faster and lighter**
+
+- Images and sounds are decoded when they are first shown or exported instead of when a file is opened. Opening a game
+  with many images is several times faster and uses less memory (for example 975 ms → 218 ms and 279 MB → 185 MB on a
+  game with 93 images).
+- The executables are precompiled (ReadyToRun): the window appears about 30 % sooner and first uses no longer pause
+  for compilation.
+- Previews and timeline playback copy pixels directly instead of encoding and decoding a PNG for every frame.
+- The console batches `trace()` output, so games that trace every frame no longer slow the interface down.
+
+**Player**
+
+- **Play** after **Stop** is more than twice as fast: the player is kept instead of being destroyed, and one browser
+  environment is shared.
+- Ruffle is extracted once to `%LOCALAPPDATA%\MortisFlash\Ruffle` and read directly by WebView2 instead of going
+  through the interface thread on every load.
+- The game receives the keyboard as soon as it is loaded, so its controls respond without clicking it first.
+- Browser shortcuts are disabled inside the game (no "Save page as" on Ctrl+S, no page reload on F5); F5, Ctrl+O and
+  Ctrl+S are forwarded to the app.
+
+See the [changelog](https://github.com/Nekuzaky/Mortis-flash-decompiler/blob/main/CHANGELOG.md) for the full history.
 
 ## Download
 
@@ -16,15 +41,7 @@ in Windows 11 and most up-to-date Windows 10 installations; the app offers a lin
 **First launch:** the executables are not code-signed. If Windows SmartScreen shows *Windows protected your PC*, choose
 **More info**, then **Run anyway**.
 
-## Highlights
-
-- **Decompile** SWF files and Flash projectors to readable ActionScript 3 and ActionScript 1/2, including AS2 classes.
-- **Edit and recompile** with built-in compilers: AS3 method bodies, AS1/AS2 scripts and classes, or the p-code of any script.
-- **Play** the game inside the app with Ruffle; it restarts after every change and its `trace()` output goes to a console.
-- **Replace** images, sounds, stream sounds, binary data and texts, then save the modified SWF.
-- **Export** scripts, images, sounds, shapes (SVG), sprites, fonts, texts, video and timeline frames.
-
-See the [README](https://github.com/Nekuzaky/Mortis-flash-decompiler#readme), the [user guide](https://github.com/Nekuzaky/Mortis-flash-decompiler/blob/main/docs/user-guide.md)
-and the [changelog](https://github.com/Nekuzaky/Mortis-flash-decompiler/blob/main/CHANGELOG.md) for details.
+See the [README](https://github.com/Nekuzaky/Mortis-flash-decompiler#readme) and the
+[user guide](https://github.com/Nekuzaky/Mortis-flash-decompiler/blob/main/docs/user-guide.md) to get started.
 
 Only decompile files you own or have permission to analyze. Extracted code and assets remain the property of their authors.

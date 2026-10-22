@@ -3,7 +3,7 @@
 All notable changes to MortisFlash are listed here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 and the project uses [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
+## [1.0.1] — 2026-10-22
 
 ### Performance
 
@@ -63,4 +63,5 @@ First public release.
 
 - `mflash` with the `info`, `scripts`, `export`, `frame` and `sheet` commands.
 
+[1.0.1]: https://github.com/Nekuzaky/Mortis-flash-decompiler/releases/tag/v1.0.1
 [1.0.0]: https://github.com/Nekuzaky/Mortis-flash-decompiler/releases/tag/v1.0.0

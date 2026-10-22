@@ -1,6 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
+    <!-- Precompiled code in published builds: faster startup and no JIT pauses on first use -->
+    <PublishReadyToRun>true</PublishReadyToRun>
     <RootNamespace>MortisFlash</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ApplicationIcon>Assets\icon.ico</ApplicationIcon>

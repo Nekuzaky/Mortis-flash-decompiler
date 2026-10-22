@@ -5,6 +5,7 @@ using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Platform.Storage;
+using Avalonia.Threading;
 using MortisFlash.Assets;
 using MortisFlash.Avm2;
 using MortisFlash.Controls;
@@ -27,13 +28,9 @@ public partial class MainWindow
         BodyGrid.ColumnDefinitions[3].Width = new GridLength(on ? 5 : 0);
         BodyGrid.ColumnDefinitions[4].Width = on ? new GridLength(1, GridUnitType.Star) : new GridLength(0);
         PlayButton.Content = on ? "■  Stop" : "▶  Play";
+        // The player is only hidden when stopped: the next Play reuses it instead of starting a new browser
         if (on) ReloadPlayer();
-        else
-        {
-            _player?.Stop();
-            PlayerHost.Content = null;
-            _player = null;
-        }
+        else _player?.Stop();
     }
 
     void OnReloadPlayer(object? sender, RoutedEventArgs e)
@@ -41,7 +38,11 @@ public partial class MainWindow
         if (PlayButton.IsChecked == true) ReloadPlayer();
     }
 
-    void OnClearConsole(object? sender, RoutedEventArgs e) => ConsoleBox.Text = "";
+    void OnClearConsole(object? sender, RoutedEventArgs e)
+    {
+        _pendingLog.Clear();
+        ConsoleBox.Text = "";
+    }
 
     async void OnCapturePlayer(object? sender, RoutedEventArgs e)
     {
@@ -73,6 +74,13 @@ public partial class MainWindow
                 break;
             case "loaded":
                 PlayerStatus.Text = text;
+                // The game gets the keyboard right away, without an extra click
+                _player?.FocusGame();
+                break;
+            case "shortcut":
+                if (text == "F5") OnReloadPlayer(null, new RoutedEventArgs());
+                else if (text == "Ctrl+O") OnOpen(null, new RoutedEventArgs());
+                else if (text == "Ctrl+S" && SaveSwfButton.IsVisible) OnSaveSwf(null, new RoutedEventArgs());
                 break;
             case "error":
                 PlayerStatus.Text = "Error";
@@ -96,11 +104,31 @@ public partial class MainWindow
         }
     }
 
+    readonly System.Text.StringBuilder _pendingLog = new();
+    bool _logScheduled;
+
     void Log(string line)
     {
-        var text = (ConsoleBox.Text ?? "") + line + "\n";
-        // Cap the console size: keep only the most recent output
-        if (text.Length > 200_000) text = text[^150_000..];
+        _pendingLog.Append(line).Append('\n');
+        if (_logScheduled) return;
+        // Games can trace every frame: lines are batched into at most ten console updates per second
+        _logScheduled = true;
+        DispatcherTimer.RunOnce(FlushLog, TimeSpan.FromMilliseconds(100));
+    }
+
+    void FlushLog()
+    {
+        _logScheduled = false;
+        if (_pendingLog.Length == 0) return;
+        var text = (ConsoleBox.Text ?? "") + _pendingLog;
+        _pendingLog.Clear();
+        // Keep the console light (the text box lays out all of its text): only the most recent output is kept
+        const int Max = 48_000;
+        if (text.Length > Max)
+        {
+            int cut = text.IndexOf('\n', text.Length - Max * 3 / 4);
+            text = text[(cut < 0 ? text.Length - Max * 3 / 4 : cut + 1)..];
+        }
         ConsoleBox.Text = text;
         ConsoleBox.CaretIndex = text.Length;
     }

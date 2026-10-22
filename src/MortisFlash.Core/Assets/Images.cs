@@ -9,27 +9,41 @@ public sealed class SwfImage
 {
     public required int Id { get; init; }
     public required SwfTag Tag { get; init; }
-    /// <summary>Bytes of the exported file (JPEG, PNG or GIF).</summary>
-    public required byte[] FileBytes { get; init; }
     public required string Extension { get; init; }
     public string Format { get; init; } = "";
     SKBitmap? _bitmap;
+    bool _decoded;
+    byte[]? _fileBytes;
     readonly Func<SKBitmap?>? _decode;
+    readonly Func<SwfImage, byte[]> _file;
 
-    internal SwfImage(Func<SKBitmap?>? decode) => _decode = decode;
+    // Decoding and PNG encoding are deferred to first use: opening a file with many images stays fast
+    internal SwfImage(Func<SKBitmap?>? decode, Func<SwfImage, byte[]> file)
+    {
+        _decode = decode;
+        _file = file;
+    }
 
-    /// <summary>Unpremultiplied (RGBA) bitmap, or null if the format cannot be decoded.</summary>
+    internal SwfImage(Func<SKBitmap?>? decode, byte[] file) : this(decode, _ => file) { }
+
+    /// <summary>Bytes of the exported file (JPEG, PNG or GIF), built on first use.</summary>
+    public byte[] FileBytes => _fileBytes ??= _file(this);
+
+    /// <summary>Unpremultiplied (RGBA) bitmap, or null if the format cannot be decoded. Decoded on first use.</summary>
     public SKBitmap? Bitmap
     {
         get
         {
-            if (_bitmap == null && _decode != null)
+            if (!_decoded)
             {
-                try { _bitmap = _decode(); } catch { _bitmap = null; }
+                _decoded = true;
+                try { _bitmap = _decode?.Invoke(); } catch { _bitmap = null; }
             }
             return _bitmap;
         }
     }
+
+    internal static byte[] PngOf(SwfImage img) => img.Bitmap is { } bmp ? ImageDecoder.EncodePng(bmp) : [];
 
     public int Width => Bitmap?.Width ?? 0;
     public int Height => Bitmap?.Height ?? 0;
@@ -48,7 +62,7 @@ public static class ImageDecoder
                 var img = r.Rest();
                 byte[] jpeg = jpegTables is { Length: > 0 } ? Concat(jpegTables, img) : img;
                 jpeg = CleanJpeg(jpeg);
-                return new SwfImage(() => SKBitmap.Decode(jpeg)) { Id = id, Tag = tag, FileBytes = jpeg, Extension = ".jpg", Format = "JPEG" };
+                return new SwfImage(() => SKBitmap.Decode(jpeg), jpeg) { Id = id, Tag = tag, Extension = ".jpg", Format = "JPEG" };
             }
             case TagCodes.DefineBitsJPEG2:
             {
@@ -71,33 +85,26 @@ public static class ImageDecoder
                     var alpha = InflateSafe(alphaZ);
                     return ApplyAlpha(bmp, alpha);
                 }
-                var built = Build();
-                if (built == null)
-                    return new SwfImage(null) { Id = id, Tag = tag, FileBytes = jpeg, Extension = ".jpg", Format = "JPEG+alpha" };
-                var png = EncodePng(built);
-                return new SwfImage(() => built) { Id = id, Tag = tag, FileBytes = png, Extension = ".png", Format = "JPEG+alpha" };
+                // Exported as PNG with the alpha applied; the JPEG itself if it cannot be decoded
+                return new SwfImage(Build, img => img.Bitmap != null ? SwfImage.PngOf(img) : jpeg) { Id = id, Tag = tag, Extension = ".png", Format = "JPEG+alpha" };
             }
             case TagCodes.DefineBitsLossless:
             case TagCodes.DefineBitsLossless2:
-            {
-                var bmp = DecodeLossless(tag);
-                var png = bmp != null ? EncodePng(bmp) : [];
-                return new SwfImage(() => bmp)
+                return new SwfImage(() => DecodeLossless(tag), SwfImage.PngOf)
                 {
-                    Id = id, Tag = tag, FileBytes = png, Extension = ".png",
+                    Id = id, Tag = tag, Extension = ".png",
                     Format = tag.Code == TagCodes.DefineBitsLossless2 ? "Lossless RGBA" : "Lossless RGB",
                 };
-            }
         }
         return null;
     }
 
     static SwfImage FromEncoded(int id, SwfTag tag, byte[] data)
     {
-        if (IsPng(data)) return new SwfImage(() => SKBitmap.Decode(data)) { Id = id, Tag = tag, FileBytes = data, Extension = ".png", Format = "PNG" };
-        if (IsGif(data)) return new SwfImage(() => SKBitmap.Decode(data)) { Id = id, Tag = tag, FileBytes = data, Extension = ".gif", Format = "GIF" };
+        if (IsPng(data)) return new SwfImage(() => SKBitmap.Decode(data), data) { Id = id, Tag = tag, Extension = ".png", Format = "PNG" };
+        if (IsGif(data)) return new SwfImage(() => SKBitmap.Decode(data), data) { Id = id, Tag = tag, Extension = ".gif", Format = "GIF" };
         var jpeg = CleanJpeg(data);
-        return new SwfImage(() => SKBitmap.Decode(jpeg)) { Id = id, Tag = tag, FileBytes = jpeg, Extension = ".jpg", Format = "JPEG" };
+        return new SwfImage(() => SKBitmap.Decode(jpeg), jpeg) { Id = id, Tag = tag, Extension = ".jpg", Format = "JPEG" };
     }
 
     public static bool IsPng(byte[] d) => d.Length > 8 && d[0] == 0x89 && d[1] == 'P' && d[2] == 'N' && d[3] == 'G';

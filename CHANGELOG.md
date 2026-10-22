@@ -3,6 +3,26 @@
 All notable changes to MortisFlash are listed here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 and the project uses [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Performance
+
+- Images and sounds are decoded when they are first shown or exported instead of when the file is opened: opening a
+  game with many images is several times faster and uses less memory (Incubattle: 975 ms → 218 ms, 279 MB → 185 MB).
+- Stopping the game hides the player instead of destroying it, and one browser environment is shared: **Play** after
+  **Stop** shows the game in about 0.3 s instead of 0.7 s.
+- Ruffle is extracted once to `%LOCALAPPDATA%\MortisFlash\Ruffle` and read by WebView2 directly, instead of being
+  streamed through the UI thread on every load.
+- Previews and timeline playback copy pixels directly instead of encoding and decoding a PNG for every frame.
+- The console batches `trace()` output (at most ten updates per second) and keeps its text short.
+- Published executables are precompiled (ReadyToRun): the app window appears about 30 % sooner.
+
+### Player
+
+- The game receives the keyboard as soon as it is loaded, so its controls respond without clicking it first.
+- Browser shortcuts are disabled inside the game (no "Save page as" on Ctrl+S, no page reload on F5); F5, Ctrl+O and
+  Ctrl+S are forwarded to the app.
+
 ## [1.0.0] — 2026-10-22
 
 First public release.

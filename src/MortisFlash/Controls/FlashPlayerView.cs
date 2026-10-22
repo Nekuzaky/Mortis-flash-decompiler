@@ -33,6 +33,42 @@ public sealed partial class FlashPlayerView : NativeControlHost
     static readonly System.Reflection.Assembly Bundle = typeof(FlashPlayerView).Assembly;
     public static bool IsAvailable => OperatingSystem.IsWindows() && Bundle.GetManifestResourceInfo("Ruffle/ruffle.js") != null;
 
+    /// <summary>
+    /// Folder the embedded Ruffle files are extracted to (once per build), so WebView2 reads and caches them itself
+    /// instead of streaming 28 MB of WebAssembly through the UI thread on every load. Null if it cannot be written.
+    /// </summary>
+    static readonly Lazy<string?> RuffleCache = new(ExtractRuffle);
+
+    static string? ExtractRuffle()
+    {
+        try
+        {
+            string root = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "MortisFlash", "Ruffle");
+            string folder = Path.Combine(root, Bundle.ManifestModule.ModuleVersionId.ToString("N"));
+            if (File.Exists(Path.Combine(folder, "ruffle.js"))) return folder;
+            string temp = folder + ".tmp";
+            if (Directory.Exists(temp)) Directory.Delete(temp, recursive: true);
+            Directory.CreateDirectory(temp);
+            foreach (var name in Bundle.GetManifestResourceNames().Where(n => n.StartsWith("Ruffle/", StringComparison.Ordinal)))
+            {
+                using var src = Bundle.GetManifestResourceStream(name)!;
+                using var dst = File.Create(Path.Combine(temp, name["Ruffle/".Length..]));
+                src.CopyTo(dst);
+            }
+            Directory.Move(temp, folder);
+            // Previous builds' copies are no longer used
+            foreach (var old in Directory.GetDirectories(root).Where(d => !string.Equals(d, folder, StringComparison.OrdinalIgnoreCase)))
+            {
+                try { Directory.Delete(old, recursive: true); } catch (IOException) { } catch (UnauthorizedAccessException) { }
+            }
+            return folder;
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+        {
+            return null;
+        }
+    }
+
     public FlashPlayerView()
     {
         this.GetObservable(BoundsProperty).Subscribe(new BoundsObserver(this));
@@ -61,6 +97,13 @@ public sealed partial class FlashPlayerView : NativeControlHost
     }
 
     public void OpenDevTools() => _controller?.CoreWebView2.OpenDevToolsWindow();
+
+    /// <summary>Gives the keyboard to the game (after a click on the app's buttons, keys would otherwise stay in the app).</summary>
+    public void FocusGame()
+    {
+        try { _controller?.MoveFocus(CoreWebView2MoveFocusReason.Programmatic); }
+        catch (InvalidOperationException) { }
+    }
 
     public bool IsReady => _ready;
 
@@ -110,18 +153,20 @@ public sealed partial class FlashPlayerView : NativeControlHost
     {
         try
         {
-            string data = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "MortisFlash", "WebView2");
-            // Let game audio start without a prior user click
-            var options = new CoreWebView2EnvironmentOptions("--autoplay-policy=no-user-gesture-required");
-            _env = await CoreWebView2Environment.CreateAsync(null, data, options);
+            string? ruffle = await Task.Run(() => RuffleCache.Value);
+            _env = await SharedEnvironment.Value;
             if (_hwnd == IntPtr.Zero) return;
             _controller = await _env.CreateCoreWebView2ControllerAsync(_hwnd);
             _controller.DefaultBackgroundColor = System.Drawing.Color.FromArgb(255, 12, 12, 12);
+            _controller.AcceleratorKeyPressed += OnAcceleratorKey;
             var web = _controller.CoreWebView2;
             web.Settings.IsStatusBarEnabled = false;
             web.Settings.AreDefaultContextMenusEnabled = false;
             web.Settings.IsZoomControlEnabled = false;
-            web.AddWebResourceRequestedFilter($"https://{PlayerHost}/*", CoreWebView2WebResourceContext.All);
+            // No browser shortcuts inside the game (Ctrl+S "save page", Ctrl+P, Ctrl+F, F5 page reload…); the app's own are forwarded
+            web.Settings.AreBrowserAcceleratorKeysEnabled = false;
+            if (ruffle != null) web.SetVirtualHostNameToFolderMapping(PlayerHost, ruffle, CoreWebView2HostResourceAccessKind.Allow);
+            else web.AddWebResourceRequestedFilter($"https://{PlayerHost}/*", CoreWebView2WebResourceContext.All);
             web.AddWebResourceRequestedFilter($"https://{GameHost}/*", CoreWebView2WebResourceContext.All);
             web.WebResourceRequested += OnResourceRequested;
             web.WebMessageReceived += OnWebMessage;
@@ -142,6 +187,32 @@ public sealed partial class FlashPlayerView : NativeControlHost
         {
             Message?.Invoke("error", "Player unavailable: " + e.Message);
         }
+    }
+
+    /// <summary>One browser environment for the whole app: restarting the player does not start new browser processes.</summary>
+    static readonly Lazy<Task<CoreWebView2Environment>> SharedEnvironment = new(() =>
+    {
+        string data = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "MortisFlash", "WebView2");
+        // Let game audio start without a prior user click
+        var options = new CoreWebView2EnvironmentOptions("--autoplay-policy=no-user-gesture-required");
+        return CoreWebView2Environment.CreateAsync(null, data, options);
+    });
+
+    /// <summary>App shortcuts pressed while the game has the keyboard: F5, Ctrl+O and Ctrl+S go to the app.</summary>
+    void OnAcceleratorKey(object? sender, CoreWebView2AcceleratorKeyPressedEventArgs e)
+    {
+        if (e.KeyEventKind != CoreWebView2KeyEventKind.KeyDown || e.PhysicalKeyStatus.WasKeyDown != 0) return;
+        bool ctrl = GetKeyState(0x11) < 0;
+        string? shortcut = (e.VirtualKey, ctrl) switch
+        {
+            (0x74, false) => "F5",
+            (0x4F, true) => "Ctrl+O",
+            (0x53, true) => "Ctrl+S",
+            _ => null,
+        };
+        if (shortcut == null) return;
+        e.Handled = true;
+        Message?.Invoke("shortcut", shortcut);
     }
 
     void OnWebMessage(object? sender, CoreWebView2WebMessageReceivedEventArgs e)
@@ -227,4 +298,7 @@ public sealed partial class FlashPlayerView : NativeControlHost
     [LibraryImport("user32.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
     private static partial bool DestroyWindow(IntPtr hwnd);
+
+    [LibraryImport("user32.dll")]
+    private static partial short GetKeyState(int virtualKey);
 }

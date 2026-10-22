@@ -27,14 +27,15 @@ Requirements:
 The executable is not code-signed, so Windows SmartScreen may show "Windows protected your PC" the first time you run
 it. Click **More info**, then **Run anyway**.
 
-MortisFlash writes to two folders outside its own location:
+MortisFlash writes to these folders outside its own location:
 
 | Folder | Content |
 |---|---|
 | `%LOCALAPPDATA%\MortisFlash\WebView2` | Data of the embedded player (WebView2 user data folder). |
+| `%LOCALAPPDATA%\MortisFlash\Ruffle` | The Ruffle player, extracted from the executable on the first **Play** (about 30 MB, replaced when you update MortisFlash). |
 | `%TEMP%\MortisFlash` | Sounds and videos opened with a **Play** button in the preview. |
 
-To remove MortisFlash, delete the executable and these two folders.
+To remove MortisFlash, delete the executable and these folders.
 
 ## Opening files
 
@@ -155,7 +156,9 @@ the system.
 
 - The status next to the "Game" title shows "Loading…", then the stage size, frame rate and SWF version once the
   game is loaded, or "Error".
-- **Restart**, or `F5`, reloads the game from the beginning.
+- **Restart**, or `F5`, reloads the game from the beginning. `F5`, `Ctrl+O` and `Ctrl+S` also work while the game has
+  the keyboard; other browser shortcuts are disabled inside the game.
+- Once the game is loaded, it receives the keyboard directly, so its controls respond without clicking it first.
 - **Capture** saves a PNG screenshot of the player area (the suggested name is `<file>_capture.png`).
 - The console below the game shows the game's `trace()` output. A line "— Running <file> —" marks each start, and
   "— Running modified version of <file> —" each start after a change. Player errors are prefixed with `!`.

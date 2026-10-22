@@ -615,7 +615,8 @@ public partial class MainWindow : Window
             try
             {
                 using var bmp = render(f);
-                image.Source = bmp != null ? ToAvalonia(bmp) : null;
+                image.Source = bmp != null ? ToAvalonia(bmp, image.Source as WriteableBitmap) : null;
+                image.InvalidateVisual();
             }
             catch (Exception ex) { SetStatus("Rendering failed: " + ex.Message); }
         }
@@ -692,7 +693,21 @@ public partial class MainWindow : Window
     static string Frames(int n) => Count(n, "frame");
     static string Count(int n, string noun) => n == 1 ? $"1 {noun}" : $"{n:N0} {noun}s";
 
-    static Bitmap ToAvalonia(SKBitmap bmp) => new(new MemoryStream(SwfRenderer.EncodePng(bmp)));
+    /// <summary>
+    /// Copies a Skia bitmap straight into an Avalonia bitmap (no PNG encode and decode); <paramref name="reuse"/> is
+    /// filled in place when it has the same size, which keeps timeline playback cheap.
+    /// </summary>
+    static WriteableBitmap ToAvalonia(SKBitmap bmp, WriteableBitmap? reuse = null)
+    {
+        var size = new PixelSize(Math.Max(1, bmp.Width), Math.Max(1, bmp.Height));
+        var wb = reuse != null && reuse.PixelSize == size
+            ? reuse
+            : new WriteableBitmap(size, new Vector(96, 96), Avalonia.Platform.PixelFormat.Bgra8888, Avalonia.Platform.AlphaFormat.Premul);
+        using var fb = wb.Lock();
+        using var pixmap = bmp.PeekPixels();
+        pixmap?.ReadPixels(new SKImageInfo(size.Width, size.Height, SKColorType.Bgra8888, SKAlphaType.Premul), fb.Address, fb.RowBytes);
+        return wb;
+    }
 
     static IBrush? _checker;
 

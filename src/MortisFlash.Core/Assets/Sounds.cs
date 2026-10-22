@@ -11,8 +11,11 @@ public sealed class SwfSound
     public required bool Stereo { get; init; }
     public required bool Is16Bit { get; init; }
     public required int SampleCount { get; init; }
-    /// <summary>Exportable file (MP3, WAV, or raw data for Nellymoser/Speex).</summary>
-    public required byte[] FileBytes { get; init; }
+    byte[]? _fileBytes;
+    /// <summary>Exportable file (MP3, WAV, or raw data for Nellymoser/Speex), built on first use when <see cref="Build"/> is set.</summary>
+    public byte[] FileBytes { get => _fileBytes ??= Build?.Invoke() ?? []; init => _fileBytes = value; }
+    /// <summary>Builds <see cref="FileBytes"/> on first use (decoding ADPCM/PCM is deferred until the sound is played or saved).</summary>
+    public Func<byte[]>? Build { private get; init; }
     public required string Extension { get; init; }
     public SwfTag? Tag { get; init; }
     public double Duration => Rate > 0 ? SampleCount / (double)Rate : 0;
@@ -35,11 +38,11 @@ public static class SoundDecoder
         int samples = (int)r.U32();
         var data = r.Rest();
         int rate = format switch { 4 => 16000, 5 => 8000, 11 => 16000, _ => Rates[rateIdx] };
-        var (bytes, ext) = Encode(format, data, rate, is16, stereo, samples, isStream: false);
         return new SwfSound
         {
             Id = id, Name = $"sound_{id}", Codec = Codecs[format], Rate = rate, Stereo = stereo, Is16Bit = is16,
-            SampleCount = samples, FileBytes = bytes, Extension = ext, Tag = tag,
+            SampleCount = samples, Extension = ExtensionOf(format), Tag = tag,
+            Build = () => Encode(format, data, rate, is16, stereo, samples, isStream: false).Item1,
         };
     }
 
@@ -96,6 +99,15 @@ public static class SoundDecoder
             SampleCount = total, FileBytes = bytes, Extension = ext, Tag = head,
         };
     }
+
+    static string ExtensionOf(int format) => format switch
+    {
+        0 or 1 or 3 => ".wav",
+        2 => ".mp3",
+        4 or 5 or 6 => ".nellymoser",
+        11 => ".speex",
+        _ => ".bin",
+    };
 
     static (byte[], string) Encode(int format, byte[] data, int rate, bool is16, bool stereo, int samples, bool isStream)
     {

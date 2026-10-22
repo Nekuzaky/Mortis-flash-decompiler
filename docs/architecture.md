@@ -256,11 +256,14 @@ nothing half-applied.
 
 `FlashPlayerView` is an Avalonia `NativeControlHost` that creates a Win32 child window and hosts a WebView2
 controller in it (only `Microsoft.Web.WebView2.Core` is used; the package's WPF and WinForms references are removed
-by an MSBuild target in the project file). The page and the game are served from memory through
-`WebResourceRequested`:
+by an MSBuild target in the project file).
 
-- `https://player.mortisflash/` serves Ruffle and `player.html`, read from the executable's embedded resources named
-  `Ruffle/<file>`. The player is reported unavailable when not running on Windows or when `Ruffle/ruffle.js` is missing.
+- `https://player.mortisflash/` serves Ruffle and `player.html`. They are embedded in the executable as resources named
+  `Ruffle/<file>` and extracted once per build to `%LOCALAPPDATA%\MortisFlash\Ruffle\<build id>`, which is mapped
+  to the host with `SetVirtualHostNameToFolderMapping`: WebView2 reads and caches the 28 MB of WebAssembly itself
+  instead of receiving them through the UI thread. If the folder cannot be written, the resources are served from
+  memory through `WebResourceRequested`. The player is reported unavailable when not running on Windows or when
+  `Ruffle/ruffle.js` is missing.
 - `https://game.mortisflash/current.swf` serves the current SWF bytes (a version number in the query string defeats
   caching). Any other path on this host is resolved against the folder of the opened file, without leaving it.
 - Navigation away from the player host is cancelled and new windows are refused, so links opened by the game do
@@ -270,7 +273,12 @@ by an MSBuild target in the project file). The page and the game are served from
   `traceObserver`, which is re-attached after loading) and `error`. The host also raises `missing-runtime` when the
   WebView2 runtime is not installed.
 - The WebView2 environment uses `%LOCALAPPDATA%\MortisFlash\WebView2` as its user data folder and the
-  `--autoplay-policy=no-user-gesture-required` option so that game audio starts without a click.
+  `--autoplay-policy=no-user-gesture-required` option so that game audio starts without a click. One environment is
+  shared by the whole app, and the player is hidden rather than destroyed when the game is stopped, so **Play** does
+  not start new browser processes.
+- Browser shortcuts are disabled inside the page (`AreBrowserAcceleratorKeysEnabled = false`), so keys such as Ctrl+S
+  or F5 never open browser dialogs or reload the page; `AcceleratorKeyPressed` forwards F5, Ctrl+O and Ctrl+S to the
+  app. Once a game is loaded, the keyboard focus is moved into the player so its controls respond without a click.
 
 ## Testing
 

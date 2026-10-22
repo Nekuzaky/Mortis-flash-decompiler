@@ -102,8 +102,8 @@ The project file embeds every file of this folder in the executable:
 <EmbeddedResource Include="Ruffle\**" LogicalName="Ruffle/%(Filename)%(Extension)" />
 ```
 
-Each file becomes a resource named `Ruffle/<file name>`, which `FlashPlayerView` serves from memory on
-`https://player.mortisflash/`. Since the logical name only contains the file name, subfolders are flattened: keep all
+Each file becomes a resource named `Ruffle/<file name>`. On the first **Play**, `FlashPlayerView` extracts them to
+`%LOCALAPPDATA%\MortisFlash\Ruffle\<build id>` and maps that folder to `https://player.mortisflash/`. Since the logical name only contains the file name, subfolders are flattened: keep all
 files directly in `Ruffle/`.
 
 To update Ruffle:

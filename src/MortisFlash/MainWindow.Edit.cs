@@ -116,13 +116,18 @@ public partial class MainWindow
         SetStatus($"{what}…", busy: true);
         try
         {
-            var (newDoc, bytes) = await Task.Run(() =>
+            int known = doc.Errors.Count;
+            var (newDoc, bytes, notes) = await Task.Run(() =>
             {
                 edit(doc);
-                return SwfEditor.Rebuild(doc);
+                // Warnings raised by the edit belong to the old document, which Rebuild replaces: keep them for the status bar
+                var raised = doc.Errors.Skip(known).ToList();
+                var (d, b) = SwfEditor.Rebuild(doc);
+                return (d, b, raised);
             });
             ShowDocument(newDoc, bytes, key);
-            SetStatus($"{what}: done.{(PlayButton.IsChecked == true ? " The game has been restarted." : " Click “Play” to test it.")}");
+            SetStatus($"{what}: done.{(PlayButton.IsChecked == true ? " The game has been restarted." : " Click “Play” to test it.")}"
+                      + string.Concat(notes.Select(n => "  " + n)));
         }
         catch (Exception ex)
         {

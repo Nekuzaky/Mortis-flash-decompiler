@@ -43,7 +43,7 @@ The command-line tool is available on the same page as **`mflash-<version>-win-x
 
 - **Requirements:** Windows 10 or 11, 64-bit. The embedded game player uses the Microsoft Edge WebView2 runtime, which
   ships with Windows 11 and most up-to-date Windows 10 installations. If it is missing, the game panel links to
-  Microsoft's installer; browsing, exporting and editing work without it.
+  Microsoft's WebView2 download page; browsing, exporting and editing work without it.
 - **SmartScreen:** the executables are not code-signed, so Windows may show *Windows protected your PC* on first launch.
   Choose **More info**, then **Run anyway**.
 
@@ -55,10 +55,10 @@ The command-line tool is available on the same page as **`mflash-<version>-win-x
 | **ActionScript 1/2** (AVM1) | Frame scripts, sprite timelines, `onClipEvent` and `on()` handlers, buttons, `DoInitAction`, and AS2 classes rebuilt as `class X extends Y { … }` with accessors and statics. |
 | **Source editing** | Edit the decompiled code and recompile it: AS3 one method body at a time, AS1/AS2 whole scripts and AS2 classes. The compilers are built in; no Flex SDK, Animate or Java is needed. |
 | **P-code** | A bytecode listing for every script, viewable and editable, for anything the compilers do not cover. |
-| **Live testing** | The game runs inside the app (Ruffle through WebView2), restarts after every change and streams its `trace()` output to a console. |
-| **Images** | JPEG (tables merged, broken markers repaired), JPEG with alpha, lossless 8/15/24/32-bit, PNG and GIF. Export to PNG or JPEG, replace with PNG, JPEG or GIF. |
-| **Sounds** | MP3 kept as is, PCM and ADPCM decoded to WAV, stream sounds rebuilt. Replace event sounds and stream sounds with MP3 or WAV. |
-| **Vector graphics** | Shapes and morph shapes exported to SVG with gradients and bitmap fills; sprites, buttons and texts rendered to PNG. |
+| **Live testing** | The game runs inside the app (Ruffle through WebView2), restarts after every change while it is running, and streams its `trace()` output to a console. |
+| **Images** | JPEG (tables merged, broken markers repaired), JPEG with alpha, lossless 8/15/24/32-bit, PNG and GIF. Saved as JPEG, PNG or GIF; replaced with PNG, JPEG or GIF. |
+| **Sounds** | MP3 kept as is, PCM and ADPCM decoded to WAV, stream sounds rebuilt, Nellymoser and Speex exported raw. Replace event sounds and stream sounds with MP3 or WAV. |
+| **Vector graphics** | Shapes and morph shapes exported to SVG with gradients and bitmap fills; shapes, sprites and timeline frames rendered to PNG; buttons and texts previewed. |
 | **Timeline** | Frame-by-frame rendering with masks, color transforms and morphs, with playback in the app. |
 | **Fonts and texts** | Glyph sheets, embedded OpenType fonts, static and dynamic texts. Text fields and static texts can be edited. |
 | **Other data** | Binary data with type detection (nested SWFs open in place), video streams exported to FLV, full tag list. |
@@ -119,7 +119,7 @@ The complete 46-second walkthrough is available as a video: [mortisflash-demo.mp
    every script and keeps those that contain the text.
 3. **Play** opens the game panel. `F5` restarts the game, **Capture** saves a screenshot, and the console shows
    everything the game traces.
-4. **Edit** a script, a text, an image, a sound or binary data. Each change rewrites the SWF and restarts the game.
+4. **Edit** a script, a text, an image, a sound or binary data. Each change rewrites the SWF and restarts the game if it is running.
 5. **Save SWF…** (`Ctrl+S`) writes the modified file. **Export all…** extracts everything to a folder.
 
 The [user guide](docs/user-guide.md) and the [editing guide](docs/editing.md) cover every view and option.
@@ -134,7 +134,8 @@ mflash frame   game.swf 12 frame12.png      # render one frame of the timeline
 mflash sheet   game.swf sheet.png           # contact sheet of the timeline
 ```
 
-Parts: `scripts`, `pcode`, `images`, `sounds`, `shapes`, `sprites`, `fonts`, `texts`, `binary`, `videos`, `frames`.
+Parts: `scripts`, `pcode`, `images`, `sounds`, `shapes`, `sprites`, `fonts`, `texts`, `binary`, `videos`, `frames`
+or `all`.
 See the [command-line reference](docs/command-line.md).
 
 ## Documentation
@@ -169,11 +170,11 @@ Read the [architecture notes](docs/architecture.md) for details.
 
 - Encrypted SWFs (for example Harman AIR encryption) cannot be opened.
 - Filters and blend modes are not drawn in previews; the embedded player shows them.
-- The compilers do not support E4X, `with` in AS3, or closures that capture local variables of the enclosing AS3
-  method. Scripts the decompiler prints with `§§` placeholders cannot be recompiled from source either. P-code mode
-  covers all of these cases.
-- Stream sounds can be replaced with MP3 at 11, 22 or 44 kHz, or 16-bit PCM WAV. Static texts can only use the
-  characters embedded in their font.
+- The compilers do not support E4X, `with` in AS3, `Vector` literals (`new <T>[…]`), or closures that capture local
+  variables of the enclosing AS3 method, and AS2 `try` blocks accept a single `catch`. Scripts the decompiler prints
+  with `§§` placeholders cannot be recompiled from source either. P-code mode covers all of these cases.
+- Stream sounds can be replaced with MP3 at 11, 22 or 44 kHz, or 16-bit PCM WAV at 5.5, 11, 22 or 44 kHz. Static texts
+  can only use the characters embedded in their font.
 
 ## Build from source
 

@@ -491,7 +491,7 @@ public partial class MainWindow : Window
         var toggle = new Button { Content = "P-code" };
         ToolTip.SetTip(toggle, "Toggle between the reconstructed ActionScript and the disassembled bytecode");
         var edit = new Button { Content = "Edit", IsVisible = s.As2 != null || s.As3 != null };
-        ToolTip.SetTip(edit, "Edit this script's bytecode (p-code), then test the game");
+        ToolTip.SetTip(edit, "Edit this script in ActionScript (or p-code), recompile it and test the game");
         edit.Click += (_, _) => ShowScriptEditor(s);
         Header(s.Name, $"{(s.Kind == ScriptKind.As3 ? "ActionScript 3" : "ActionScript 1/2")}  ·  {s.Folder}",
             edit,

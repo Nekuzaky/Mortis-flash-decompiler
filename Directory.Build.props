@@ -4,7 +4,9 @@
         <Nullable>enable</Nullable>
         <LangVersion>latest</LangVersion>
         <ImplicitUsings>enable</ImplicitUsings>
-        <Version>0.1.0</Version>
+        <Version>1.0.0</Version>
+        <RepositoryUrl>https://github.com/Nekuzaky/Mortis-flash-decompiler</RepositoryUrl>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <Authors>Nekuzaky</Authors>
         <Copyright>© 2026 Nekuzaky</Copyright>
         <!-- Zero warnings tolerated; .NET analyzers enabled -->

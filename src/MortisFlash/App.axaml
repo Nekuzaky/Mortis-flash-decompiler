@@ -54,6 +54,15 @@
         <SolidColorBrush x:Key="ButtonForeground" Color="#D1D1D1" />
         <SolidColorBrush x:Key="ButtonForegroundPointerOver" Color="#FAFAFA" />
         <SolidColorBrush x:Key="ButtonForegroundPressed" Color="#FAFAFA" />
+        <!-- Checked toggle (Play / Stop): filled like the primary action, dark text -->
+        <SolidColorBrush x:Key="ToggleButtonBackgroundChecked" Color="#FAFAFA" />
+        <SolidColorBrush x:Key="ToggleButtonBackgroundCheckedPointerOver" Color="#E4E4E4" />
+        <SolidColorBrush x:Key="ToggleButtonBackgroundCheckedPressed" Color="#D1D1D1" />
+        <SolidColorBrush x:Key="ToggleButtonForegroundChecked" Color="#0C0C0C" />
+        <SolidColorBrush x:Key="ToggleButtonForegroundCheckedPointerOver" Color="#0C0C0C" />
+        <SolidColorBrush x:Key="ToggleButtonForegroundCheckedPressed" Color="#0C0C0C" />
+        <SolidColorBrush x:Key="ToggleButtonBorderBrushChecked" Color="Transparent" />
+        <SolidColorBrush x:Key="ToggleButtonBorderBrushCheckedPointerOver" Color="Transparent" />
         <SolidColorBrush x:Key="TextControlBackground" Color="#0C0C0C" />
         <SolidColorBrush x:Key="TextControlBackgroundPointerOver" Color="#101010" />
         <SolidColorBrush x:Key="TextControlBackgroundFocused" Color="#0C0C0C" />

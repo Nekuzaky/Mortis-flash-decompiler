@@ -255,7 +255,8 @@ public partial class MainWindow
         };
         var errorText = new TextBlock { Foreground = MortisTheme.Ribbon, TextWrapping = TextWrapping.Wrap, IsVisible = false, Margin = new Thickness(16, 0, 16, 8) };
         var signature = new TextBlock { FontFamily = editor.FontFamily, FontSize = 12, Foreground = MortisTheme.TextMute, Margin = new Thickness(16, 0, 16, 6), IsVisible = false };
-        var top = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Margin = new Thickness(16, 10) };
+        // Wraps onto a second line when the preview is narrow (game panel open)
+        var top = new WrapPanel { Orientation = Orientation.Horizontal, ItemSpacing = 8, LineSpacing = 8, Margin = new Thickness(16, 10) };
         ComboBox? methods = null;
         List<(string Title, MethodInfo Method, MethodOwner Owner)> list = [];
 

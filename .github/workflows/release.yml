@@ -1,0 +1,50 @@
+name: Release
+
+# Pushing a tag such as v1.0.0 builds the portable executables and publishes them as a GitHub release.
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Publish executables
+        shell: pwsh
+        run: |
+          $PSNativeCommandUseErrorActionPreference = $false
+          $v = '${{ github.ref_name }}'.TrimStart('v')
+          foreach ($p in 'MortisFlash', 'MortisFlash.Cli') {
+            dotnet publish src/$p -c Release -r win-x64 --self-contained `
+              -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true `
+              -p:EnableCompressionInSingleFile=true -p:DebugType=none -p:Version=$v -o publish
+            if ($LASTEXITCODE -ne 0) { throw "publish failed: $p" }
+          }
+          New-Item -ItemType Directory release | Out-Null
+          Copy-Item publish/MortisFlash.exe "release/MortisFlash-$v-win-x64.exe"
+          Copy-Item publish/mflash.exe "release/mflash-$v-win-x64.exe"
+          $sums = Get-ChildItem release/*.exe | Sort-Object Name | ForEach-Object {
+            '{0}  {1}' -f (Get-FileHash $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant(), $_.Name
+          }
+          $sums | Set-Content release/SHA256SUMS.txt -Encoding ascii
+          $fence = '```'
+          $notes = (Get-Content .github/release-notes.md -Raw) + "`n## SHA-256 checksums`n`n${fence}text`n" + ($sums -join "`n") + "`n${fence}`n"
+          Set-Content release-notes.md $notes -Encoding utf8
+
+      - name: Create GitHub release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $v = '${{ github.ref_name }}'.TrimStart('v')
+          gh release create '${{ github.ref_name }}' (Get-ChildItem release/*).FullName --title "MortisFlash $v" --notes-file release-notes.md --latest
+          if ($LASTEXITCODE -ne 0) { throw 'release creation failed' }

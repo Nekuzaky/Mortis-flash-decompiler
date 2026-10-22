@@ -1,0 +1,7 @@
+* text=auto
+*.png binary
+*.gif binary
+*.ico binary
+*.mp4 binary
+*.wasm binary
+*.swf binary

@@ -167,7 +167,8 @@ public partial class MainWindow : Window
         if (reselect != null && Reselect(reselect)) { }
         else
         {
-            SetStatus($"{doc.Scripts.Count} scripts, {doc.Images.Count} images, {doc.Sounds.Count} sounds, {doc.Shapes.Count} shapes, {doc.Sprites.Count} sprites"
+            SetStatus($"{Count(doc.Scripts.Count, "script")}, {Count(doc.Images.Count, "image")}, {Count(doc.Sounds.Count, "sound")}, "
+                      + $"{Count(doc.Shapes.Count, "shape")}, {Count(doc.Sprites.Count, "sprite")}"
                       + (doc.Errors.Count > 0 ? $" — {doc.Errors.Count} warning(s)" : ""));
             ShowInfo("info");
         }
@@ -688,7 +689,8 @@ public partial class MainWindow : Window
         PreviewHost.Content = CodeView.Create(text);
     }
 
-    static string Frames(int n) => n == 1 ? "1 frame" : $"{n:N0} frames";
+    static string Frames(int n) => Count(n, "frame");
+    static string Count(int n, string noun) => n == 1 ? $"1 {noun}" : $"{n:N0} {noun}s";
 
     static Bitmap ToAvalonia(SKBitmap bmp) => new(new MemoryStream(SwfRenderer.EncodePng(bmp)));
 

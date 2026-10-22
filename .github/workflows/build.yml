@@ -1,0 +1,28 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Build
+        run: dotnet build MortisFlash.slnx -c Release
+
+      - name: Smoke test the command-line tool
+        shell: pwsh
+        run: |
+          $PSNativeCommandUseErrorActionPreference = $false
+          dotnet run --project src/MortisFlash.Cli -c Release --no-build
+          if ($LASTEXITCODE -ne 1) { throw "mflash should print its usage and exit with code 1" }
+          exit 0

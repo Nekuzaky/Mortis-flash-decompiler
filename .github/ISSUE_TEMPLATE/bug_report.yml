@@ -1,0 +1,51 @@
+name: Bug report
+description: Something does not work as expected (decompilation, editing, player, export, interface).
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for taking the time to report a problem. Only attach SWF files you are allowed to share.
+  - type: input
+    id: version
+    attributes:
+      label: MortisFlash version
+      placeholder: "1.0.0"
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Decompiled ActionScript 3
+        - Decompiled ActionScript 1/2
+        - Compiling edited source
+        - P-code editing
+        - Asset preview or export
+        - Asset replacement or text editing
+        - Embedded player
+        - Command line (mflash)
+        - Interface
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: What you did, step by step.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected and actual result
+      description: What you expected to happen and what happened instead. Paste the relevant code, p-code or error message.
+    validations:
+      required: true
+  - type: input
+    id: windows
+    attributes:
+      label: Windows version
+      placeholder: "Windows 11 24H2"

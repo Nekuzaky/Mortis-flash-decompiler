@@ -1,0 +1,284 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="MortisFlash.App"
+             RequestedThemeVariant="Dark">
+
+    <!--
+        Mortis family theme (MortisClouds, Memento): dark monochrome, the primary action is white with
+        dark text, translucent grey rules, Georgia headings, 8 / 12 px corner radii.
+        Floating surfaces have a lit top edge and a large soft shadow.
+        The accent (white by default) can be changed in the preferences, as in Memento;
+        the red ribbon is reserved for things the app does on its own (timelapse recording).
+    -->
+    <Application.Resources>
+        <SolidColorBrush x:Key="Bg" Color="#0C0C0C" />
+        <SolidColorBrush x:Key="Sidebar" Color="#080808" />
+        <SolidColorBrush x:Key="Elevated" Color="#141414" />
+        <SolidColorBrush x:Key="Hover" Color="#1B1B1B" />
+        <SolidColorBrush x:Key="Active" Color="#242424" />
+        <SolidColorBrush x:Key="Line" Color="#61525252" />
+        <SolidColorBrush x:Key="LineStrong" Color="#9E525252" />
+        <SolidColorBrush x:Key="Text" Color="#D1D1D1" />
+        <SolidColorBrush x:Key="TextStrong" Color="#FAFAFA" />
+        <SolidColorBrush x:Key="TextMute" Color="#868686" />
+        <SolidColorBrush x:Key="TextFaint" Color="#6B6B6B" />
+        <SolidColorBrush x:Key="Ribbon" Color="#E5533D" />
+
+        <!-- Accent: replaced at runtime by MortisTheme.Apply -->
+        <Color x:Key="AccentColor">#FAFAFA</Color>
+        <SolidColorBrush x:Key="Accent" Color="#FAFAFA" />
+        <SolidColorBrush x:Key="AccentHover" Color="#FFFFFF" />
+        <SolidColorBrush x:Key="AccentPressed" Color="#D7D7D7" />
+        <SolidColorBrush x:Key="AccentSoft" Color="#24FAFAFA" />
+        <SolidColorBrush x:Key="AccentFg" Color="#0C0C0C" />
+
+        <FontFamily x:Key="TitleFont">Georgia, Palatino Linotype, Noto Serif, serif</FontFamily>
+        <FontFamily x:Key="MonoFont">Consolas, Cascadia Mono, Roboto Mono, monospace</FontFamily>
+
+        <!-- Fluent theme overrides -->
+        <Color x:Key="SystemAccentColor">#FAFAFA</Color>
+        <CornerRadius x:Key="ControlCornerRadius">8</CornerRadius>
+        <CornerRadius x:Key="OverlayCornerRadius">12</CornerRadius>
+        <SolidColorBrush x:Key="SliderTrackFill" Color="#2E2E2E" />
+        <SolidColorBrush x:Key="SliderTrackFillPointerOver" Color="#3A3A3A" />
+        <SolidColorBrush x:Key="SliderTrackFillPressed" Color="#3A3A3A" />
+        <SolidColorBrush x:Key="SliderTrackValueFill" Color="#FAFAFA" />
+        <SolidColorBrush x:Key="SliderThumbBackground" Color="#FAFAFA" />
+        <SolidColorBrush x:Key="ButtonBackground" Color="Transparent" />
+        <SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="#1B1B1B" />
+        <SolidColorBrush x:Key="ButtonBackgroundPressed" Color="#242424" />
+        <SolidColorBrush x:Key="ButtonBackgroundDisabled" Color="Transparent" />
+        <SolidColorBrush x:Key="ButtonBorderBrush" Color="#9E525252" />
+        <SolidColorBrush x:Key="ButtonBorderBrushPointerOver" Color="#B0606060" />
+        <SolidColorBrush x:Key="ButtonBorderBrushPressed" Color="#B0606060" />
+        <SolidColorBrush x:Key="ButtonForeground" Color="#D1D1D1" />
+        <SolidColorBrush x:Key="ButtonForegroundPointerOver" Color="#FAFAFA" />
+        <SolidColorBrush x:Key="ButtonForegroundPressed" Color="#FAFAFA" />
+        <SolidColorBrush x:Key="TextControlBackground" Color="#0C0C0C" />
+        <SolidColorBrush x:Key="TextControlBackgroundPointerOver" Color="#101010" />
+        <SolidColorBrush x:Key="TextControlBackgroundFocused" Color="#0C0C0C" />
+        <SolidColorBrush x:Key="TextControlBorderBrush" Color="#9E525252" />
+        <SolidColorBrush x:Key="TextControlBorderBrushPointerOver" Color="#B0606060" />
+        <SolidColorBrush x:Key="TextControlBorderBrushFocused" Color="#FAFAFA" />
+        <SolidColorBrush x:Key="TextControlForeground" Color="#FAFAFA" />
+        <SolidColorBrush x:Key="TextControlForegroundFocused" Color="#FAFAFA" />
+        <SolidColorBrush x:Key="ComboBoxBackground" Color="#0C0C0C" />
+        <SolidColorBrush x:Key="ComboBoxBackgroundPointerOver" Color="#1B1B1B" />
+        <SolidColorBrush x:Key="ComboBoxBorderBrush" Color="#9E525252" />
+        <SolidColorBrush x:Key="ComboBoxDropDownBackground" Color="#141414" />
+        <SolidColorBrush x:Key="MenuFlyoutPresenterBackground" Color="#141414" />
+        <SolidColorBrush x:Key="MenuFlyoutPresenterBorderBrush" Color="#9E525252" />
+        <SolidColorBrush x:Key="MenuFlyoutItemBackgroundPointerOver" Color="#1B1B1B" />
+        <SolidColorBrush x:Key="MenuFlyoutSubItemBackgroundPointerOver" Color="#1B1B1B" />
+        <SolidColorBrush x:Key="MenuFlyoutSubItemBackgroundSubMenuOpened" Color="#1B1B1B" />
+        <SolidColorBrush x:Key="FlyoutPresenterBackground" Color="#141414" />
+        <SolidColorBrush x:Key="FlyoutBorderThemeBrush" Color="#9E525252" />
+    </Application.Resources>
+
+    <Application.Styles>
+        <FluentTheme />
+
+        <Style Selector="TextBlock.title">
+            <Setter Property="FontFamily" Value="{StaticResource TitleFont}" />
+            <Setter Property="FontWeight" Value="Normal" />
+            <Setter Property="Foreground" Value="{StaticResource TextStrong}" />
+        </Style>
+        <Style Selector="TextBlock.mono">
+            <Setter Property="FontFamily" Value="{StaticResource MonoFont}" />
+        </Style>
+        <Style Selector="TextBlock.section">
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Foreground" Value="{StaticResource TextMute}" />
+            <Setter Property="Margin" Value="0,12,0,4" />
+        </Style>
+        <Style Selector="TextBlock.dim">
+            <Setter Property="Foreground" Value="{StaticResource TextMute}" />
+            <Setter Property="FontSize" Value="12" />
+        </Style>
+        <Style Selector="TextBlock.faint">
+            <Setter Property="Foreground" Value="{StaticResource TextFaint}" />
+            <Setter Property="FontSize" Value="11" />
+        </Style>
+
+        <!-- Icon button: subtle, highlights on hover -->
+        <Style Selector="Button.icon, ToggleButton.icon">
+            <Setter Property="Width" Value="38" />
+            <Setter Property="Height" Value="38" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="Foreground" Value="{StaticResource TextMute}" />
+        </Style>
+        <Style Selector="Button.icon /template/ ContentPresenter, ToggleButton.icon /template/ ContentPresenter">
+            <Setter Property="Background" Value="Transparent" />
+        </Style>
+        <Style Selector="Button.icon:pointerover /template/ ContentPresenter, ToggleButton.icon:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="{StaticResource Hover}" />
+            <Setter Property="Foreground" Value="{StaticResource TextStrong}" />
+        </Style>
+        <Style Selector="Button.icon:pressed /template/ ContentPresenter">
+            <Setter Property="Background" Value="{StaticResource Active}" />
+        </Style>
+        <Style Selector="Button.icon:disabled /template/ ContentPresenter">
+            <Setter Property="Opacity" Value="0.3" />
+            <Setter Property="Background" Value="Transparent" />
+        </Style>
+        <Style Selector="Button.icon.active /template/ ContentPresenter, ToggleButton.icon:checked /template/ ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource AccentSoft}" />
+            <Setter Property="Foreground" Value="{DynamicResource Accent}" />
+        </Style>
+        <Style Selector="Button.small, ToggleButton.small">
+            <Setter Property="Width" Value="32" />
+            <Setter Property="Height" Value="32" />
+        </Style>
+        <Style Selector="Button.recording /template/ ContentPresenter">
+            <Setter Property="Foreground" Value="{StaticResource Ribbon}" />
+        </Style>
+
+        <!-- Tabs: segmented control -->
+        <Style Selector="ToggleButton.tab">
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Padding" Value="4,6" />
+            <Setter Property="Margin" Value="2" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Foreground" Value="{StaticResource TextMute}" />
+        </Style>
+        <Style Selector="ToggleButton.tab /template/ ContentPresenter">
+            <Setter Property="Background" Value="Transparent" />
+        </Style>
+        <Style Selector="ToggleButton.tab:pointerover /template/ ContentPresenter">
+            <Setter Property="Foreground" Value="{StaticResource TextStrong}" />
+            <Setter Property="Background" Value="Transparent" />
+        </Style>
+        <Style Selector="ToggleButton.tab:checked /template/ ContentPresenter">
+            <Setter Property="Background" Value="{StaticResource Active}" />
+            <Setter Property="Foreground" Value="{StaticResource TextStrong}" />
+        </Style>
+
+        <!-- Chips -->
+        <Style Selector="ToggleButton.chip, Button.chip">
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Padding" Value="10,5" />
+            <Setter Property="Margin" Value="2" />
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="MinHeight" Value="30" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="BorderBrush" Value="{StaticResource LineStrong}" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Foreground" Value="{StaticResource Text}" />
+        </Style>
+        <Style Selector="ToggleButton.chip:pointerover /template/ ContentPresenter, Button.chip:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="{StaticResource Hover}" />
+            <Setter Property="Foreground" Value="{StaticResource TextStrong}" />
+        </Style>
+        <Style Selector="ToggleButton.chip:checked /template/ ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource AccentSoft}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource Accent}" />
+            <Setter Property="Foreground" Value="{StaticResource TextStrong}" />
+        </Style>
+
+        <!-- Primary action: filled with the accent color (white by default) -->
+        <Style Selector="Button.accent">
+            <Setter Property="Background" Value="{DynamicResource Accent}" />
+            <Setter Property="Foreground" Value="{DynamicResource AccentFg}" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Padding" Value="14,8" />
+        </Style>
+        <Style Selector="Button.accent /template/ ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource Accent}" />
+            <Setter Property="Foreground" Value="{DynamicResource AccentFg}" />
+        </Style>
+        <Style Selector="Button.accent:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource AccentHover}" />
+            <Setter Property="Foreground" Value="{DynamicResource AccentFg}" />
+        </Style>
+        <Style Selector="Button.accent:pressed /template/ ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource AccentPressed}" />
+        </Style>
+        <Style Selector="Button.accent:disabled /template/ ContentPresenter">
+            <Setter Property="Background" Value="{StaticResource Active}" />
+            <Setter Property="Foreground" Value="{StaticResource TextFaint}" />
+        </Style>
+
+        <Style Selector="Button.flat">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="CornerRadius" Value="8" />
+        </Style>
+        <Style Selector="Button.flat /template/ ContentPresenter">
+            <Setter Property="Background" Value="Transparent" />
+        </Style>
+        <Style Selector="Button.flat:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="{StaticResource Hover}" />
+        </Style>
+
+        <!-- List row -->
+        <Style Selector="Button.row">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="Padding" Value="8,6" />
+            <Setter Property="Foreground" Value="{StaticResource Text}" />
+        </Style>
+        <Style Selector="Button.row /template/ ContentPresenter">
+            <Setter Property="Background" Value="Transparent" />
+        </Style>
+        <Style Selector="Button.row:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="{StaticResource Hover}" />
+        </Style>
+        <Style Selector="Button.row.selected /template/ ContentPresenter">
+            <Setter Property="Background" Value="{StaticResource Active}" />
+            <Setter Property="Foreground" Value="{StaticResource TextStrong}" />
+        </Style>
+
+        <!-- Floating surfaces: elevated, lit top edge, large soft shadow -->
+        <Style Selector="Border.float">
+            <Setter Property="Background" Value="{StaticResource Elevated}" />
+            <Setter Property="BorderBrush" Value="{StaticResource LineStrong}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="12" />
+            <Setter Property="BoxShadow" Value="inset 0 1 0 0 #14FFFFFF, 0 16 48 -12 #B8000000, 0 2 8 0 #70000000" />
+        </Style>
+
+        <Style Selector="Slider">
+            <Setter Property="MinHeight" Value="28" />
+        </Style>
+        <Style Selector="Slider:vertical">
+            <Setter Property="MinWidth" Value="28" />
+        </Style>
+        <Style Selector="TextBox, ComboBox">
+            <Setter Property="CornerRadius" Value="8" />
+        </Style>
+
+        <!-- Resource tree -->
+        <Style Selector="TreeViewItem">
+            <Setter Property="MinHeight" Value="26" />
+            <Setter Property="Padding" Value="2,0" />
+            <Setter Property="FontSize" Value="13" />
+        </Style>
+        <Style Selector="TreeViewItem:selected /template/ Border#PART_LayoutRoot">
+            <Setter Property="Background" Value="{DynamicResource AccentSoft}" />
+        </Style>
+        <Style Selector="TreeViewItem:pointerover /template/ Border#PART_LayoutRoot">
+            <Setter Property="Background" Value="{StaticResource Hover}" />
+        </Style>
+        <Style Selector="SelectableTextBlock.code">
+            <Setter Property="FontFamily" Value="{StaticResource MonoFont}" />
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="Foreground" Value="{StaticResource Text}" />
+            <Setter Property="SelectionBrush" Value="#3D5B9DFF" />
+        </Style>
+    </Application.Styles>
+</Application>

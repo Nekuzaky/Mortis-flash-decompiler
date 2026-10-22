@@ -1,0 +1,94 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="MortisFlash.MainWindow"
+        Icon="/Assets/Icon.png"
+        Title="MortisFlash"
+        Width="1320" Height="840"
+        MinWidth="760" MinHeight="480"
+        WindowStartupLocation="CenterScreen"
+        Background="{StaticResource Bg}">
+
+    <Grid RowDefinitions="Auto,*,Auto">
+
+        <!-- Top bar -->
+        <Border Grid.Row="0" Background="{StaticResource Sidebar}" BorderBrush="{StaticResource Line}" BorderThickness="0,0,0,1" Padding="14,8">
+            <Grid ColumnDefinitions="Auto,*,Auto">
+                <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                    <Image Source="/Assets/Icon.png" Width="26" Height="26" />
+                    <TextBlock Classes="title" Text="MortisFlash" FontSize="20" VerticalAlignment="Center" />
+                    <TextBlock x:Name="FileInfo" Classes="dim" VerticalAlignment="Center" Margin="14,2,0,0" TextTrimming="CharacterEllipsis" />
+                </StackPanel>
+                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                    <Button x:Name="BackButton" Content="← Parent SWF" IsVisible="False" Click="OnBack" ToolTip.Tip="Go back to the file that contains this SWF" />
+                    <Button x:Name="OpenButton" Content="Open…" Click="OnOpen" ToolTip.Tip="Open a .swf file or a Flash projector (.exe) — Ctrl+O" />
+                    <Button x:Name="SaveSwfButton" Content="Save SWF…" IsVisible="False" Click="OnSaveSwf"
+                            ToolTip.Tip="Save the SWF with your changes — Ctrl+S" />
+                    <ToggleButton x:Name="PlayButton" Content="▶  Play" IsEnabled="False" IsCheckedChanged="OnPlayToggled"
+                                  ToolTip.Tip="Run the game inside the app (Ruffle). It reloads after every change — F5 to restart" />
+                    <Button x:Name="ExportAllButton" Classes="accent" Content="Export all…" IsEnabled="False" Click="OnExportAll"
+                            ToolTip.Tip="Scripts, images, sounds, shapes, fonts, texts, videos and timeline frames" />
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Body: tree on the left, preview on the right -->
+        <Grid Grid.Row="1" x:Name="BodyGrid" ColumnDefinitions="330,5,*,0,0">
+            <Border Background="{StaticResource Sidebar}" BorderBrush="{StaticResource Line}" BorderThickness="0,0,1,0">
+                <Grid RowDefinitions="Auto,Auto,*">
+                    <TextBox x:Name="Filter" PlaceholderText="Filter by name…" Margin="10,10,10,4" />
+                    <CheckBox Grid.Row="1" x:Name="SearchCode" Content="Also search in code" Margin="12,0,10,6" FontSize="12"
+                              ToolTip.Tip="Decompile every script and keep those that contain the text" />
+                    <TreeView Grid.Row="2" x:Name="Tree" SelectionChanged="OnTreeSelection" Margin="4,0,0,0" />
+                </Grid>
+            </Border>
+            <GridSplitter Grid.Column="1" Background="Transparent" ResizeDirection="Columns" />
+            <Grid Grid.Column="2" RowDefinitions="Auto,*">
+                <Border x:Name="PreviewHeader" Padding="18,10" BorderBrush="{StaticResource Line}" BorderThickness="0,0,0,1" IsVisible="False">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock x:Name="PreviewTitle" Classes="title" FontSize="17" TextTrimming="CharacterEllipsis" />
+                            <TextBlock x:Name="PreviewSubtitle" Classes="dim" TextTrimming="CharacterEllipsis" Margin="0,2,0,0" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" x:Name="PreviewActions" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center" />
+                    </Grid>
+                </Border>
+                <ContentControl Grid.Row="1" x:Name="PreviewHost" />
+            </Grid>
+            <GridSplitter Grid.Column="3" x:Name="PlayerSplitter" Background="{StaticResource Line}" ResizeDirection="Columns" IsVisible="False" />
+            <!-- Game panel: embedded Ruffle player and trace() output -->
+            <Border Grid.Column="4" x:Name="PlayerPanel" Background="{StaticResource Sidebar}" IsVisible="False">
+                <Grid RowDefinitions="Auto,*,5,Auto">
+                    <Border Padding="12,8" BorderBrush="{StaticResource Line}" BorderThickness="0,0,0,1">
+                        <Grid ColumnDefinitions="Auto,*,Auto">
+                            <TextBlock Classes="title" Text="Game" FontSize="17" VerticalAlignment="Center" />
+                            <TextBlock Grid.Column="1" x:Name="PlayerStatus" Classes="dim" Margin="12,2,8,0" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                            <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6">
+                                <Button Content="Restart" Click="OnReloadPlayer" ToolTip.Tip="Reload the game from the beginning — F5" />
+                                <Button Content="Capture" Click="OnCapturePlayer" ToolTip.Tip="Save a PNG screenshot of the game" />
+                                <Button Content="Clear" Click="OnClearConsole" ToolTip.Tip="Clear the trace() console" />
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+                    <ContentControl Grid.Row="1" x:Name="PlayerHost" />
+                    <GridSplitter Grid.Row="2" Background="{StaticResource Line}" ResizeDirection="Rows" />
+                    <TextBox Grid.Row="3" x:Name="ConsoleBox" IsReadOnly="True" AcceptsReturn="True" Height="150" FontSize="12"
+                             FontFamily="{StaticResource MonoFont}" TextWrapping="NoWrap" BorderThickness="0" CornerRadius="0"
+                             PlaceholderText="The game's trace() output will appear here." />
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- Status bar -->
+        <Border Grid.Row="2" Background="{StaticResource Sidebar}" BorderBrush="{StaticResource Line}" BorderThickness="0,1,0,0" Padding="14,5">
+            <Grid ColumnDefinitions="*,Auto,Auto">
+                <TextBlock x:Name="Status" Classes="dim" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" Text="Ready" />
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" Margin="12,0">
+                    <ProgressBar x:Name="Progress" Width="160" Height="4" MinHeight="4" IsVisible="False" VerticalAlignment="Center" />
+                    <Button x:Name="OpenFolderButton" Classes="flat" Content="Open folder" IsVisible="False" Click="OnOpenExportFolder" Padding="8,2" />
+                </StackPanel>
+                <TextBlock Grid.Column="2" Classes="faint" VerticalAlignment="Center"
+                           Text="For your own files, preservation or learning only. Extracted content belongs to its authors." />
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

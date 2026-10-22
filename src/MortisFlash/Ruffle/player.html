@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>MortisFlash — player</title>
+<style>
+    html, body { margin: 0; height: 100%; background: #0C0C0C; overflow: hidden; }
+    #stage { width: 100%; height: 100%; }
+    #stage > * { width: 100%; height: 100%; display: block; }
+    .msg { color: #868686; font: 13px system-ui, sans-serif; display: flex; align-items: center; justify-content: center;
+           height: 100%; text-align: center; padding: 0 24px; box-sizing: border-box; }
+</style>
+<script>
+    // MortisFlash embedded player: Ruffle (MIT / Apache-2.0), https://ruffle.rs
+    window.RufflePlayer = window.RufflePlayer || {};
+    window.RufflePlayer.config = {
+        autoplay: "on",
+        unmuteOverlay: "hidden",
+        splashScreen: false,
+        letterbox: "on",
+        contextMenu: "rightClickOnly",
+        showSwfDownload: false,
+        openUrlMode: "deny",
+        allowNetworking: "all",
+        logLevel: "warn",
+        publicPath: "/",
+    };
+</script>
+<script src="ruffle.js"></script>
+</head>
+<body>
+<div id="stage"><div class="msg">The game will appear here.</div></div>
+<script>
+    let player = null;
+
+    function post(type, text) {
+        if (window.chrome && window.chrome.webview) window.chrome.webview.postMessage(JSON.stringify({ type, text: String(text) }));
+    }
+
+    window.addEventListener("error", e => post("error", e.message));
+
+    // Called by the app: (re)loads the SWF served by the host
+    async function loadSwf(url) {
+        const stage = document.getElementById("stage");
+        if (player) { try { player.remove(); } catch (_) { } player = null; }
+        stage.innerHTML = "";
+        try {
+            const ruffle = window.RufflePlayer.newest();
+            player = ruffle.createPlayer();
+            stage.appendChild(player);
+            const api = player.ruffle ? player.ruffle() : player;
+            // The trace() observer only sticks once the instance exists, so it is (re)attached after each step
+            const observe = () => { api.traceObserver = msg => post("trace", msg); };
+            observe();
+            player.addEventListener("loadedmetadata", () => {
+                observe();
+                const m = api.metadata || {};
+                post("loaded", `${m.width || "?"}×${m.height || "?"}, ${m.frameRate || "?"} fps, SWF ${m.swfVersion || "?"}`);
+            });
+            await api.load({ url });
+            observe();
+        } catch (e) {
+            post("error", e && e.message ? e.message : e);
+        }
+    }
+
+    function stopSwf() {
+        if (player) { try { player.remove(); } catch (_) { } player = null; }
+        document.getElementById("stage").innerHTML = '<div class="msg">Player stopped.</div>';
+    }
+
+    post("ready", window.RufflePlayer.newest() ? "ruffle" : "absent");
+</script>
+</body>
+</html>
